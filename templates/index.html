@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Enhancement and Edge Detection</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #e0eafc, #cfdef3);
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 30px 20px 10px;
+      font-size: 32px;
+      color: #1e3a8a;
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.85);
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-file-upload {
+      display: inline-block;
+      background-color: #2563eb;
+      color: white;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background-color 0.3s ease;
+      border: none;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .custom-file-upload:hover {
+      background-color: #079b27;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    #fileName {
+      font-style: italic;
+      color: #555;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    select,
+    input[type="range"],
+    label {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+    }
+
+    button {
+      background: #2563eb;
+      color: #fff;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #079b27;
+    }
+
+    .image-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin: 40px auto;
+      max-width: 1000px;
+    }
+
+    .image-container div {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      width: 420px;
+      text-align: center;
+    }
+
+    img {
+      max-width: 100%;
+      max-height: 350px;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+
+    #downloadLink {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #10b981;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+
+    #downloadLink:hover {
+      background: #2563eb;
+    }
+
+    @media (max-width: 768px) {
+      .image-container {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Image Enhancement and Edge Detection</h1>
+
+  <form id="uploadForm" enctype="multipart/form-data">
+    <label for="imageInput" class="custom-file-upload">📁 Upload Image</label>
+    <input type="file" name="image" id="imageInput" accept="image/*" required>
+    <span id="fileName">No file selected</span>
+
+    <label for="domain">Domain Type:</label>
+    <select name="domain" required>
+      <option value="">-- Select Domain --</option>
+      <option value="medical">Medical Image</option>
+      <option value="satellite">Satellite Image</option>
+      <option value="cctv">CCTV Footage</option>
+      <option value="document">Scanned Document</option>
+    </select>
+
+    <label for="sharpness">Sharpness (1.0 - 3.0):</label>
+    <input type="range" name="sharpness" min="1" max="3" step="0.1" value="1.5">
+
+    <label for="noise">Noise Reduction:</label>
+    <select name="noise">
+      <option value="none">None</option>
+      <option value="gaussian">Gaussian</option>
+      <option value="median">Median</option>
+      <option value="bilateral">Bilateral</option>
+    </select>
+
+    <label for="edge">Edge Detection:</label>
+    <select name="edge">
+      <option value="none">None</option>
+      <option value="sobel">Sobel</option>
+      <option value="canny">Canny</option>
+      <option value="laplacian">Laplacian</option>
+    </select>
+
+    <label><input type="checkbox" name="grayscale"> Convert to Grayscale</label>
+    <label><input type="checkbox" name="equalize"> Apply Histogram Equalization</label>
+
+    <button type="submit">🔍 Process Image</button>
+  </form>
+
+  <div class="image-container">
+    <div>
+      <h3>Original Image</h3>
+      <img id="originalImage" src="#" alt="Original" style="display:none;">
+    </div>
+    <div>
+      <h3>Processed Image</h3>
+      <img id="resultImage" src="#" alt="Processed" style="display:none;">
+      <br>
+      <a id="downloadLink" style="display:none;" download="processed.png">⬇️ Download Processed Image</a>
+    </div>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById("imageInput");
+    const originalImage = document.getElementById("originalImage");
+    const fileNameDisplay = document.getElementById("fileName");
+
+    imageInput.addEventListener("change", function () {
+      const file = this.files[0];
+      if (file) {
+        fileNameDisplay.textContent = `Selected: ${file.name}`;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          originalImage.src = e.target.result;
+          originalImage.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        fileNameDisplay.textContent = "No file selected";
+      }
+    });
+
+    document.getElementById("uploadForm").onsubmit = async function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+
+      const response = await fetch("/process", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        alert("Image processing failed.");
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const resultImage = document.getElementById("resultImage");
+      const download = document.getElementById("downloadLink");
+
+      resultImage.src = url;
+      resultImage.style.display = "block";
+      download.href = url;
+      download.style.display = "inline-block";
+    };
+  </script>
+</body>
+</html>
