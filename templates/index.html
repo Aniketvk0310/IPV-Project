@@ -30,6 +30,8 @@
 
     .custom-file-upload {
       display: inline-block;
+      width: 100%;
+      text-align: center;
       background-color: #2563eb;
       color: white;
       padding: 12px 24px;
@@ -40,8 +42,9 @@
       transition: background-color 0.3s ease;
       border: none;
       margin-bottom: 10px;
-      text-align: center;
-    }
+      box-sizing: border-box;
+     }
+
 
     .custom-file-upload:hover {
       background-color: #079b27;
@@ -141,8 +144,10 @@
   <h1>Image Enhancement and Edge Detection</h1>
 
   <form id="uploadForm" enctype="multipart/form-data">
-    <label for="imageInput" class="custom-file-upload">📁 Upload Image</label>
-    <input type="file" name="image" id="imageInput" accept="image/*" required>
+    <div class="file-upload-wrapper">
+      <label for="imageInput" class="custom-file-upload">📁 Upload Image</label>
+      <input type="file" name="image" id="imageInput" accept="image/*" required>
+    </div>
     <span id="fileName">No file selected</span>
 
     <label for="domain">Domain Type:</label>
